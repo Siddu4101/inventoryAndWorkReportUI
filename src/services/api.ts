@@ -81,3 +81,81 @@ export const getAllProductionEntriesForDate = async (processDate: string): Promi
   const data = await response.json();
   return Array.isArray(data) ? data : [];
 };
+
+/**
+ * Deletes selected production entries by IDs.
+ * API Endpoint: DELETE {baseUrl}
+ */
+export const deleteProductionEntries = async (ids: number[]): Promise<any> => {
+  const baseUrl = getStoredBaseUrl();
+  const response = await fetch(baseUrl, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(ids),
+  });
+
+  if (!response.ok) {
+    let errorMessage = `Failed to delete production entries (Status: ${response.status})`;
+    try {
+      const errData = await response.json();
+      if (errData && errData.message) {
+        errorMessage = errData.message;
+      } else if (typeof errData === 'string') {
+        errorMessage = errData;
+      }
+    } catch {
+      if (response.statusText) {
+        errorMessage += `: ${response.statusText}`;
+      }
+    }
+    throw new Error(errorMessage);
+  }
+
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return await response.json();
+  }
+  return await response.text();
+};
+
+/**
+ * Updates production entries grouped by process DTOs.
+ * API Endpoint: PUT {baseUrl}
+ */
+export const updateProductionEntries = async (processDtos: ProcessDto[]): Promise<any> => {
+  const baseUrl = getStoredBaseUrl();
+  const response = await fetch(baseUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(processDtos),
+  });
+
+  if (!response.ok) {
+    let errorMessage = `Failed to update production entries (Status: ${response.status})`;
+    try {
+      const errData = await response.json();
+      if (errData && errData.message) {
+        errorMessage = errData.message;
+      } else if (typeof errData === 'string') {
+        errorMessage = errData;
+      }
+    } catch {
+      if (response.statusText) {
+        errorMessage += `: ${response.statusText}`;
+      }
+    }
+    throw new Error(errorMessage);
+  }
+
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return await response.json();
+  }
+  return await response.text();
+};

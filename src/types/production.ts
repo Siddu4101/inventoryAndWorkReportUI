@@ -12,6 +12,7 @@ export interface ProductionDto {
 }
 
 export interface ProcessDto {
+  id?: number | null;
   processDate: string; // Format: YYYY-MM-DD
   hour: number;
   manPowerAllocated: number;
