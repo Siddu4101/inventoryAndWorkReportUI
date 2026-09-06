@@ -1,11 +1,12 @@
 import React from 'react';
-import { Layers, PlusCircle, Search, Sun, Moon } from 'lucide-react';
+import { Layers, PlusCircle, Search, Sun, Moon, SlidersHorizontal } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: 'create' | 'view';
-  setActiveTab: (tab: 'create' | 'view') => void;
+  activeTab: 'create' | 'view' | 'config';
+  setActiveTab: (tab: 'create' | 'view' | 'config') => void;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
+  styleConfigCount: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,6 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   theme,
   toggleTheme,
+  styleConfigCount,
 }) => {
   return (
     <header className="app-header">
@@ -22,8 +24,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Layers size={24} color="#ffffff" />
           </div>
           <div className="brand-text">
-            <h1>Production & Work Report</h1>
-            <p>Inventory & Production Tracking Dashboard</p>
+            <h1>MINOSIMHA – HOURLY PRODUCTION REPORT</h1>
+            <p>Hourly production tracking dashboard</p>
           </div>
         </div>
 
@@ -36,6 +38,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <PlusCircle size={17} />
               <span>Create Entry</span>
+            </button>
+
+            <button
+              type="button"
+              className={`tab-btn ${activeTab === 'config' ? 'active' : ''}`}
+              onClick={() => setActiveTab('config')}
+              title="Manage styles and manpower multipliers"
+            >
+              <SlidersHorizontal size={17} />
+              <span>Config ({styleConfigCount})</span>
             </button>
 
             <button

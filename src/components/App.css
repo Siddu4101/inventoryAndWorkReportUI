@@ -318,6 +318,83 @@ body {
   cursor: not-allowed;
 }
 
+.style-picker {
+  max-height: 13rem;
+  overflow-y: auto;
+}
+
+.config-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.config-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.config-list {
+  max-height: 25rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.config-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.config-row:first-child {
+  padding-top: 0;
+}
+
+.config-row:last-child {
+  border-bottom: none;
+}
+
+.config-row strong,
+.config-row span {
+  display: block;
+}
+
+.config-row span {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.config-row-actions,
+.config-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.config-form-actions {
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 800px) {
+  .config-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .config-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 /* Production Entries Table/Form Section */
 .entries-header {
   display: flex;
@@ -527,6 +604,15 @@ body {
   font-size: 0.75rem;
   color: var(--text-light);
   margin-top: 0.1rem;
+}
+
+.style-aggregation-card {
+  margin-bottom: 1.75rem;
+}
+
+.style-aggregation-table th,
+.style-aggregation-table td {
+  white-space: nowrap;
 }
 
 /* Data Table Styling */

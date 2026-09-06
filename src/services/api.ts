@@ -1,6 +1,8 @@
 import type { ProcessDto } from '../types/production';
 
 const DEFAULT_BASE_URL = 'http://localhost:8080/api/v1/production-process';
+//for deployment
+// const DEFAULT_BASE_URL = 'api/v1/production-process'; 
 
 export const getStoredBaseUrl = (): string => {
   return DEFAULT_BASE_URL;

@@ -11,23 +11,12 @@ import {
 } from 'lucide-react';
 import type { ProcessDto, ProductionDto } from '../types/production';
 import { createProductionEntry } from '../services/api';
+import { getStyleMultiplier, type StyleConfig } from '../config/styleConfig';
 
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
-export const STYLE_OPTIONS = [
-  { value: 'TRUNK', label: 'Trunk', multiplier: 45 },
-  { value: 'EASY_SHORTS', label: 'Easy Shorts', multiplier: 32 },
-  { value: 'LENIN_PANT', label: 'Lenin Pant', multiplier: 23 },
-  { value: 'ANKLE_PANTS', label: 'Ankle Pants', multiplier: 23 },
-];
-
-const getStyleMultiplier = (styleValue: string): number => {
-  const opt = STYLE_OPTIONS.find((s) => s.value === styleValue);
-  return opt ? opt.multiplier : 0;
-};
-
 const createEmptyProductionDto = (): ProductionDto => ({
-  style: 'TRUNK',
+  style: '',
   manPowerAllocated: 0,
   target: 0,
   checked: 0,
@@ -38,7 +27,11 @@ const createEmptyProductionDto = (): ProductionDto => ({
   remarks: '',
 });
 
-export const CreateProcessForm: React.FC = () => {
+interface CreateProcessFormProps {
+  styles: StyleConfig[];
+}
+
+export const CreateProcessForm: React.FC<CreateProcessFormProps> = ({ styles }) => {
   const [processDate, setProcessDate] = useState<string>(getTodayDate());
   const [hour, setHour] = useState<number>(1);
 
@@ -73,7 +66,7 @@ export const CreateProcessForm: React.FC = () => {
 
       // Auto-compute target based on style & manpower
       if (field === 'style' || field === 'manPowerAllocated') {
-        const mult = getStyleMultiplier(currentStyle);
+        const mult = getStyleMultiplier(currentStyle, styles);
         item.target = currentManpower * mult;
       } else if (field === 'target') {
         item.target = Number(value) || 0;
@@ -298,16 +291,16 @@ export const CreateProcessForm: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">Style / Item</label>
                   <select
-                    className="form-control"
+                    className="form-control style-picker"
                     value={item.style}
                     onChange={(e) =>
                       updateProductionDto(index, 'style', e.target.value)
                     }
                     required
                   >
-                    {STYLE_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label} ({opt.multiplier}/mp)
+                    {styles.map((style) => (
+                      <option key={style.id} value={style.name}>
+                        {style.name} ({style.multiplier}/mp)
                       </option>
                     ))}
                   </select>

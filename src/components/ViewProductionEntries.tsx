@@ -12,6 +12,7 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
+  BarChart3,
   Trash2,
   Edit3,
   Save,
@@ -24,19 +25,25 @@ import {
   deleteProductionEntries,
   updateProductionEntries,
 } from '../services/api';
+import { getStyleMultiplier, type StyleConfig } from '../config/styleConfig';
 
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
-const getStyleMultiplier = (styleName: string): number => {
-  const norm = (styleName || '').toUpperCase().replace(/[\s_-]+/g, '');
-  if (norm.includes('TRUNK')) return 45;
-  if (norm.includes('EASYSHORTS') || norm.includes('EASY') || norm.includes('SHORT')) return 32;
-  if (norm.includes('LENINPANT') || norm.includes('LENIN')) return 23;
-  if (norm.includes('ANKLEPANTS') || norm.includes('ANKLE')) return 23;
-  return 0;
-};
+interface StyleAggregate {
+  style: string;
+  manpower: number;
+  target: number;
+  checked: number;
+  pass: number;
+  defects: number;
+  beyondTarget: number;
+}
 
-export const ViewProductionEntries: React.FC = () => {
+interface ViewProductionEntriesProps {
+  styles: StyleConfig[];
+}
+
+export const ViewProductionEntries: React.FC<ViewProductionEntriesProps> = ({ styles }) => {
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDate());
   const [processes, setProcesses] = useState<ProcessDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -178,7 +185,7 @@ export const ViewProductionEntries: React.FC = () => {
       if (field === 'manPowerAllocated') {
         const manpower = Number(value) || 0;
         updated.manPowerAllocated = manpower;
-        const multiplier = getStyleMultiplier(updated.style);
+        const multiplier = getStyleMultiplier(updated.style, styles);
         updated.target = manpower * multiplier;
       } else if (field === 'checked') {
         updated.checked = Number(value) || 0;
@@ -346,6 +353,31 @@ export const ViewProductionEntries: React.FC = () => {
 
   const overallDefectPct = totalChecked > 0 ? (totalDefects / totalChecked) * 100 : 0;
   const yieldEfficiency = totalTarget > 0 ? (totalPass / totalTarget) * 100 : 0;
+
+  const styleAggregates = processes.reduce<StyleAggregate[]>((aggregates, process) => {
+    getProductionItems(process).forEach((item) => {
+      const existing = aggregates.find((aggregate) => aggregate.style === item.style);
+      if (existing) {
+        existing.manpower += Number(item.manPowerAllocated) || 0;
+        existing.target += Number(item.target) || 0;
+        existing.checked += Number(item.checked) || 0;
+        existing.pass += Number(item.pass) || 0;
+        existing.defects += Number(item.defects) || 0;
+        existing.beyondTarget += Number(item.offeredBeyondTarget) || 0;
+      } else {
+        aggregates.push({
+          style: item.style,
+          manpower: Number(item.manPowerAllocated) || 0,
+          target: Number(item.target) || 0,
+          checked: Number(item.checked) || 0,
+          pass: Number(item.pass) || 0,
+          defects: Number(item.defects) || 0,
+          beyondTarget: Number(item.offeredBeyondTarget) || 0,
+        });
+      }
+    });
+    return aggregates;
+  }, []);
 
   // List of unique hours available for dropdown filter
   const availableHours = Array.from(new Set(processes.map((p) => p.hour))).sort((a, b) => a - b);
@@ -563,6 +595,65 @@ export const ViewProductionEntries: React.FC = () => {
             <span className="metric-subtext">Total checked: {totalChecked}</span>
           </div>
         </div>
+      </div>
+
+      {/* Cross-hour Style Aggregation */}
+      <div className="card style-aggregation-card">
+        <div className="card-header">
+          <div>
+            <h2 className="card-title">
+              <BarChart3 size={22} />
+              <span>Style-wise Totals</span>
+            </h2>
+            <p className="card-subtitle">
+              Combined production totals for each style across all hours on {selectedDate}
+            </p>
+          </div>
+          <span className="badge badge-info">{styleAggregates.length} Styles</span>
+        </div>
+
+        {styleAggregates.length === 0 ? (
+          <div className="empty-state" style={{ padding: '2rem 1rem' }}>
+            <h3>No style totals available</h3>
+            <p>Style aggregation will appear after production entries are loaded.</p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table className="data-table style-aggregation-table">
+              <thead>
+                <tr>
+                  <th>Style</th>
+                  <th>Manpower</th>
+                  <th>Target</th>
+                  <th>Checked</th>
+                  <th>Pass</th>
+                  <th>Defects</th>
+                  <th>Defect %</th>
+                  <th>Beyond Target</th>
+                </tr>
+              </thead>
+              <tbody>
+                {styleAggregates.map((aggregate) => {
+                  const defectPercentage = aggregate.checked > 0
+                    ? (aggregate.defects / aggregate.checked) * 100
+                    : 0;
+                  return (
+                    <tr key={aggregate.style}>
+                      <td><strong style={{ color: 'var(--primary)' }}>{aggregate.style}</strong></td>
+                      <td>{aggregate.manpower}</td>
+                      <td>{aggregate.target}</td>
+                      <td>{aggregate.checked}</td>
+                      <td><span style={{ color: 'var(--success-text)', fontWeight: 600 }}>{aggregate.pass}</span></td>
+                      <td><span style={{ color: aggregate.defects > 0 ? 'var(--danger-text)' : 'inherit', fontWeight: aggregate.defects > 0 ? 600 : 400 }}>{aggregate.defects}</span></td>
+                      <td><span className={`badge ${getDefectBadgeClass(defectPercentage)}`}>{defectPercentage.toFixed(2)}%</span></td>
+                      <td>{aggregate.beyondTarget > 0 ? <span className="badge badge-success">+{aggregate.beyondTarget}</span> : <span style={{ color: 'var(--text-light)' }}>0</span>}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Selection Control Banner if items are selected */}
