@@ -1,14 +1,18 @@
 import React from 'react';
-import { Layers, PlusCircle, Search } from 'lucide-react';
+import { Layers, PlusCircle, Search, Sun, Moon } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'create' | 'view';
   setActiveTab: (tab: 'create' | 'view') => void;
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
+  theme,
+  toggleTheme,
 }) => {
   return (
     <header className="app-header">
@@ -43,6 +47,27 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>View Entries</span>
             </button>
           </nav>
+
+          <button
+            type="button"
+            className="theme-toggle-btn"
+            onClick={toggleTheme}
+            title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.55rem',
+              borderRadius: 'var(--radius-md)',
+              background: 'rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              cursor: 'pointer',
+              transition: 'var(--transition)',
+            }}
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
         </div>
       </div>
     </header>
